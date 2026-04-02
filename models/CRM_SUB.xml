@@ -1,0 +1,176 @@
+<mujoco model="crm_sub">
+    <compiler angle="radian" coordinate="local"
+                meshdir="assets"/>
+
+    <option cone="elliptic" impratio="100"/>
+
+    <!-- =======================
+        Defaults (GO1 스타일)
+        ======================= -->
+    <default>
+        <!-- 전체 공통 기본값 -->
+        <default class="crm">
+        <!-- 접촉 기본 -->
+        <geom friction="0.8 0.02 0.01" margin="0.001" condim="3"/>
+
+        <!-- 조인트 기본: damping=점성 마찰, frictionloss=쿨롱 마찰 -->
+        <joint damping="3.0" armature="0.05" frictionloss="0.4" limited="true"/>
+
+        <!-- position actuator 기본 -->
+        <position kp="3500" kv="150" forcerange="-300 300"/>
+        </default>
+
+        <!-- 관절 타입별 클래스 -->
+        <default class="Hip_Roll">
+        <!-- LEG1: URDF axis ~ (0, 1, 0) -->
+        <joint axis="0 1 0" range="-3.14 3.14" damping="0.0" frictionloss="0.0"/>
+        <position kp="3500" kv="250" ctrlrange="-3.14 3.14"/>
+        </default>
+
+        <default class="Hip_Pitch">
+        <!-- LEG2: axis (1,0,0) -->
+        <joint axis="1 0 0" range="-3.14 3.14" damping="0.0" frictionloss="0.0"/>
+        <position kp="3500" kv="150" ctrlrange="-3.14 3.14"/>
+        </default>
+
+        <default class="Hip_Yaw">
+        <!-- LEG3: axis (0,0,-1) -->
+        <joint axis="0 0 -1" range="-3.14 3.14" damping="0.0" frictionloss="0.0"/>
+        <position kp="3500" kv="150" ctrlrange="-3.14 3.14"/>
+        </default>
+
+        <default class="Knee_Roll">
+        <!-- LEG4: axis (0,-1,~0) -->
+        <joint axis="0 -1 0" range="-3.14 3.14" damping="0.0" frictionloss="0.0"/>
+        <position kp="3500" kv="150" ctrlrange="-3.14 3.14"/>
+        </default>
+
+        <!-- 시각용 mesh geom (충돌 제외) -->
+        <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" rgba="0.5 0.5 0.5 1"/>
+        </default>
+
+        <!-- 충돌용 geom (기본은 mesh로 두되, 실제론 primitive로 바꾸는 걸 추천) -->
+        <default class="collision">
+        <geom type="mesh" group="3" contype="1" conaffinity="1" rgba="0 0 0 0"/>
+        </default>
+
+        <!-- 발/EE 접촉용 sphere (옵션) -->
+        <default class="foot">
+        <geom type="sphere" size="0.02" priority="1" condim="6"
+                solimp="0.015 1 0.023" friction="0.9 0.02 0.01" rgba="0 0 0 0"/>
+        </default>
+    </default>
+
+    <asset>
+        <mesh name="base_link_mesh" file="base_link.STL"/>
+        <mesh name="LEG1_Link_mesh" file="LEG1_Link.STL"/>
+        <mesh name="LEG2_Link_mesh" file="LEG2_Link.STL"/>
+        <mesh name="LEG3_Link_mesh" file="LEG3_Link.STL"/>
+        <mesh name="LEG4_Link_mesh" file="LEG4_Link.STL"/>
+        <mesh name="EE_Link_mesh"   file="EE_Link.STL"/>
+    </asset>
+
+    <worldbody>
+        <!-- URDF: world -> base_footprint fixed -->
+        <body name="base_footprint" pos="0 0 1.8" childclass="crm">
+        <!-- URDF: base_joint fixed, rpy="0 0 1.570" (yaw 90deg) -->
+        <!-- quat(w x y z) = (cos(θ/2), 0,0,sin(θ/2)) -->
+        <body name="base_link" pos="0 0 0" quat="0.70710678 0 0 0.70710678">
+            <inertial
+            pos="-0.01517214 0.000045 0.00004914"
+            mass="28.575"
+            fullinertia="0.534397199 0.120933078 0.555504878  -0.000057473 -0.000024601 0.001522271"/>
+
+            <geom class="visual" mesh="base_link_mesh"/>
+            <!-- <geom class="collision" mesh="base_link_mesh"/> -->
+
+            <!-- LEG1_Joint: rpy="0 1.570 0" (pitch 90deg), axis ~ (0,1,0) -->
+            <body name="LEG1_Link" pos="0 0 0" euler="0 1.570 0">
+            <joint class="Hip_Roll" name="LEG1_Joint" type="hinge"
+                    axis="0.00024426 1 -0.000013746" range="-3.14 3.14"/>
+
+            <inertial
+                pos="0.07025 0.000025 0.00001414"
+                mass="9.745"
+                fullinertia="0.039737 0.045892 0.047309  0.000000376 -0.000000899 0.000000673"/>
+
+            <geom class="visual" mesh="LEG1_Link_mesh"/>
+            <!-- <geom class="collision" mesh="LEG1_Link_mesh"/> -->
+
+            <!-- LEG2 -->
+            <body name="LEG2_Link" pos="0.107 0 0">
+                <joint class="Hip_Pitch" name="LEG2_Joint" type="hinge" axis="1 0 0" range="-3.14 3.14"/>
+
+                <inertial
+                pos="0.11216999 0.000111 -0.002907"
+                mass="9.038"
+                fullinertia="0.030345554 0.037295083 0.039341571  0.000038118 0.000273677 0.000107007"/>
+
+                <geom class="visual" mesh="LEG2_Link_mesh"/>
+                <!-- <geom class="collision" mesh="LEG2_Link_mesh"/> -->
+
+                <!-- LEG3 -->
+                <body name="LEG3_Link" pos="0.1305 0 0">
+                <joint class="Hip_Yaw" name="LEG3_Joint" type="hinge" axis="0 0 -1" range="-3.14 3.14"/>
+
+                <inertial
+                    pos="0.36067802 0.00831394 -0.001023"
+                    mass="18.472"
+                    fullinertia="0.08626664 0.753893581 0.74923335  -0.02268318 -0.011137018 -0.000230353"/>
+
+                <geom class="visual" mesh="LEG3_Link_mesh"/>
+                <!-- <geom class="collision" mesh="LEG3_Link_mesh"/> -->
+
+                <!-- LEG4 -->
+                <body name="LEG4_Link" pos="0.509 0 0">
+                    <joint class="Knee_Roll" name="LEG4_Joint" type="hinge"
+                        axis="0 -1 0.000011137" range="-3.14 3.14"/>
+
+                    <inertial
+                    pos="0.18566556 0.006189 0.0438702"
+                    mass="6.85"
+                    fullinertia="0.056934346 0.296545203 0.326090609  0.00731145 -0.025035937 0.001744285"/>
+
+                    <geom class="visual" mesh="LEG4_Link_mesh"/>
+                    <!-- <geom class="collision" mesh="LEG4_Link_mesh"/> -->
+
+                    <!-- EE fixed -->
+                    <body name="EE_Link" pos="0.82319 -0.00010203 0.016833">
+                    <inertial
+                        pos="-0.0836316 0.000011 0.01728988"
+                        mass="1.257"
+                        fullinertia="0.00111997 0.002867038 0.003343221  0.000000744 0.000503762 0.000000222"/>
+
+                    <geom class="visual" mesh="EE_Link_mesh"/>
+                    <!-- <geom class="collision" mesh="EE_Link_mesh"/> -->
+
+                    <!-- 발끝 접촉 안정화용(원하면 size 조정) -->
+                    <geom class="foot" pos="0 0 0"/>
+                    </body>
+                </body>
+                </body>
+            </body>
+            </body>
+        </body>
+        </body>
+    </worldbody>
+
+    <actuator>
+        <motor class="Hip_Roll" name="act_leg1" joint="LEG1_Joint"
+               ctrllimited="true" ctrlrange="-300 300"/>
+        <motor class="Hip_Pitch" name="act_leg2" joint="LEG2_Joint"
+               ctrllimited="true" ctrlrange="-300 300"/>
+        <motor class="Hip_Yaw" name="act_leg3" joint="LEG3_Joint"
+               ctrllimited="true" ctrlrange="-300 300"/>
+        <motor class="Knee_Roll" name="act_leg4" joint="LEG4_Joint"
+               ctrllimited="true" ctrlrange="-300 300"/>
+    </actuator>
+
+    <!-- (선택) 홈 자세를 쓰고 싶으면 qpos/ctrl을 채워 넣으면 됨 -->
+    
+    <!-- <keyframe>
+        <key name="home" qpos="0.0 0.5 -1.2 0.3" ctrl="0.0 0.5 -1.2 0.3"/>
+    </keyframe> -->
+   
+</mujoco>
