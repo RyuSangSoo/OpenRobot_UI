@@ -16,8 +16,8 @@ constexpr size_t kJointCount = 4;
 
 struct JointStateData {
     bool received = false;
-    std::array<double, kJointCount> position_deg {};
-    std::array<double, kJointCount> velocity_deg_s {};
+    std::array<double, kJointCount> position_rad {};
+    std::array<double, kJointCount> velocity_rad_s {};
     std::array<double, kJointCount> effort {};
 };
 

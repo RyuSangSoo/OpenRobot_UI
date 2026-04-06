@@ -46,8 +46,44 @@ struct UiFonts {
     ImFont* mono = nullptr;
 };
 
-double RadToDeg(const double radians) {
+double ToDegrees(const double radians) {
     return radians * 180.0 / M_PI;
+}
+
+double DisplayAngleValue(const double radians, const bool display_in_deg) {
+    return display_in_deg ? ToDegrees(radians) : radians;
+}
+
+double DisplayAngularVelocityValue(const double radians_per_second, const bool display_in_deg) {
+    return display_in_deg ? ToDegrees(radians_per_second) : radians_per_second;
+}
+
+const char* AngleUnitLabel(const bool display_in_deg) {
+    return display_in_deg ? "deg" : "rad";
+}
+
+const char* AngularVelocityUnitLabel(const bool display_in_deg) {
+    return display_in_deg ? "deg/s" : "rad/s";
+}
+
+std::array<double, kJointCount> ConvertAngleArrayForDisplay(
+    const std::array<double, kJointCount>& values_rad,
+    const bool display_in_deg) {
+    std::array<double, kJointCount> converted {};
+    for (size_t i = 0; i < kJointCount; ++i) {
+        converted[i] = DisplayAngleValue(values_rad[i], display_in_deg);
+    }
+    return converted;
+}
+
+std::array<double, kJointCount> ConvertAngularVelocityArrayForDisplay(
+    const std::array<double, kJointCount>& values_rad_s,
+    const bool display_in_deg) {
+    std::array<double, kJointCount> converted {};
+    for (size_t i = 0; i < kJointCount; ++i) {
+        converted[i] = DisplayAngularVelocityValue(values_rad_s[i], display_in_deg);
+    }
+    return converted;
 }
 
 double FrequencyToPeriodSeconds(const double frequency_hz) {
@@ -79,25 +115,25 @@ ImU32 JointColor(const size_t index) {
 
 struct PlotBuffer {
     std::vector<float> time_s;
-    std::array<std::vector<float>, kJointCount> ref_deg;
-    std::array<std::vector<float>, kJointCount> sim_deg;
+    std::array<std::vector<float>, kJointCount> ref_rad;
+    std::array<std::vector<float>, kJointCount> sim_rad;
     size_t head = 0;
     bool full = false;
 
     PlotBuffer() : time_s(kPlotCapacity, 0.0f) {
         for (size_t i = 0; i < kJointCount; ++i) {
-            ref_deg[i].assign(kPlotCapacity, 0.0f);
-            sim_deg[i].assign(kPlotCapacity, 0.0f);
+            ref_rad[i].assign(kPlotCapacity, 0.0f);
+            sim_rad[i].assign(kPlotCapacity, 0.0f);
         }
     }
 
     void Push(const float time_value,
-              const std::array<double, kJointCount>& ref_value,
-              const std::array<double, kJointCount>& sim_value) {
+              const std::array<double, kJointCount>& ref_value_rad,
+              const std::array<double, kJointCount>& sim_value_rad) {
         time_s[head] = time_value;
         for (size_t i = 0; i < kJointCount; ++i) {
-            ref_deg[i][head] = static_cast<float>(ref_value[i]);
-            sim_deg[i][head] = static_cast<float>(sim_value[i]);
+            ref_rad[i][head] = static_cast<float>(ref_value_rad[i]);
+            sim_rad[i][head] = static_cast<float>(sim_value_rad[i]);
         }
         head = (head + 1) % time_s.size();
         if (head == 0) {
@@ -281,18 +317,18 @@ void SyncMujocoPoseFromSnapshot(MujocoViewerState& state, const UiSnapshot& snap
         return;
     }
 
-    const std::array<double, kJointCount>* source_deg = nullptr;
+    const std::array<double, kJointCount>* source_rad = nullptr;
     if (state.follow_joint_sim && snapshot.sim.received) {
-        source_deg = &snapshot.sim.position_deg;
+        source_rad = &snapshot.sim.position_rad;
     } else if (!state.follow_joint_sim && snapshot.ref.received) {
-        source_deg = &snapshot.ref.position_deg;
+        source_rad = &snapshot.ref.position_rad;
     } else if (snapshot.sim.received) {
-        source_deg = &snapshot.sim.position_deg;
+        source_rad = &snapshot.sim.position_rad;
     } else if (snapshot.ref.received) {
-        source_deg = &snapshot.ref.position_deg;
+        source_rad = &snapshot.ref.position_rad;
     }
 
-    if (source_deg == nullptr) {
+    if (source_rad == nullptr) {
         return;
     }
 
@@ -301,7 +337,7 @@ void SyncMujocoPoseFromSnapshot(MujocoViewerState& state, const UiSnapshot& snap
         if (qpos_address < 0 || qpos_address >= state.model->nq) {
             continue;
         }
-        state.data->qpos[qpos_address] = (*source_deg)[i] * M_PI / 180.0;
+        state.data->qpos[qpos_address] = (*source_rad)[i];
     }
     mj_forward(state.model, state.data);
 }
@@ -485,6 +521,7 @@ void DrawSingleJointPlot(const char* label,
                          const PlotBuffer& buffer,
                          const size_t joint_index,
                          const ImU32 joint_color,
+                         const bool display_in_deg,
                          const ImVec2 size) {
     const size_t n = buffer.Size();
     ImGui::TextUnformatted(label);
@@ -524,14 +561,14 @@ void DrawSingleJointPlot(const char* label,
         max_time = min_time + 1e-3f;
     }
 
-    float min_y = buffer.ref_deg[joint_index][IndexAt(0)];
+    float min_y = static_cast<float>(DisplayAngleValue(buffer.ref_rad[joint_index][IndexAt(0)], display_in_deg));
     float max_y = min_y;
     for (size_t i = 0; i < n; ++i) {
         const size_t index = IndexAt(i);
-        min_y = std::min(min_y, buffer.ref_deg[joint_index][index]);
-        max_y = std::max(max_y, buffer.ref_deg[joint_index][index]);
-        min_y = std::min(min_y, buffer.sim_deg[joint_index][index]);
-        max_y = std::max(max_y, buffer.sim_deg[joint_index][index]);
+        min_y = std::min(min_y, static_cast<float>(DisplayAngleValue(buffer.ref_rad[joint_index][index], display_in_deg)));
+        max_y = std::max(max_y, static_cast<float>(DisplayAngleValue(buffer.ref_rad[joint_index][index], display_in_deg)));
+        min_y = std::min(min_y, static_cast<float>(DisplayAngleValue(buffer.sim_rad[joint_index][index], display_in_deg)));
+        max_y = std::max(max_y, static_cast<float>(DisplayAngleValue(buffer.sim_rad[joint_index][index], display_in_deg)));
     }
     if (max_y <= min_y) {
         min_y -= 1.0f;
@@ -567,12 +604,12 @@ void DrawSingleJointPlot(const char* label,
         const size_t prev = IndexAt(i - 1);
         const size_t curr = IndexAt(i);
         draw_list->AddLine(
-            ImVec2(MapX(buffer.time_s[prev]), MapY(buffer.ref_deg[joint_index][prev])),
-            ImVec2(MapX(buffer.time_s[curr]), MapY(buffer.ref_deg[joint_index][curr])),
+            ImVec2(MapX(buffer.time_s[prev]), MapY(static_cast<float>(DisplayAngleValue(buffer.ref_rad[joint_index][prev], display_in_deg)))),
+            ImVec2(MapX(buffer.time_s[curr]), MapY(static_cast<float>(DisplayAngleValue(buffer.ref_rad[joint_index][curr], display_in_deg)))),
             IM_COL32(80, 200, 120, 255), 2.0f);
         draw_list->AddLine(
-            ImVec2(MapX(buffer.time_s[prev]), MapY(buffer.sim_deg[joint_index][prev])),
-            ImVec2(MapX(buffer.time_s[curr]), MapY(buffer.sim_deg[joint_index][curr])),
+            ImVec2(MapX(buffer.time_s[prev]), MapY(static_cast<float>(DisplayAngleValue(buffer.sim_rad[joint_index][prev], display_in_deg)))),
+            ImVec2(MapX(buffer.time_s[curr]), MapY(static_cast<float>(DisplayAngleValue(buffer.sim_rad[joint_index][curr], display_in_deg)))),
             joint_color, 2.0f);
     }
 
@@ -726,15 +763,15 @@ void AdsStateUiNode::FillOrderedJointData(const sensor_msgs::msg::JointState& ms
 
     for (size_t i = 0; i < kJointCount; ++i) {
         if (order[i] < 0) {
-            data.position_deg[i] = 0.0;
-            data.velocity_deg_s[i] = 0.0;
+            data.position_rad[i] = 0.0;
+            data.velocity_rad_s[i] = 0.0;
             data.effort[i] = 0.0;
             continue;
         }
 
         const size_t index = static_cast<size_t>(order[i]);
-        data.position_deg[i] = index < msg.position.size() ? RadToDeg(msg.position[index]) : 0.0;
-        data.velocity_deg_s[i] = index < msg.velocity.size() ? RadToDeg(msg.velocity[index]) : 0.0;
+        data.position_rad[i] = index < msg.position.size() ? msg.position[index] : 0.0;
+        data.velocity_rad_s[i] = index < msg.velocity.size() ? msg.velocity[index] : 0.0;
         data.effort[i] = index < msg.effort.size() ? msg.effort[index] : 0.0;
     }
     data.received = true;
@@ -833,6 +870,7 @@ int RunAdsStateUi(int argc, char** argv) {
     int ui_test_joint_index = 0;
     float ui_test_amplitude_rad = 0.25f;
     float ui_test_period_s = 5.0f;
+    int ui_display_unit_mode = 0;
     rclcpp::WallRate ui_rate(kUiRateHz);
 
     while (!glfwWindowShouldClose(window) && rclcpp::ok()) {
@@ -845,6 +883,7 @@ int RunAdsStateUi(int argc, char** argv) {
         executor.spin_some();
 
         const UiSnapshot snapshot = node->Snapshot();
+        const bool display_in_deg = (ui_display_unit_mode == 1);
         if (snapshot.test_config.received && !test_config_editor_initialized) {
             LoadUiTestConfigFromSnapshot(
                 snapshot, ui_test_joint_index, ui_test_amplitude_rad, ui_test_period_s);
@@ -859,8 +898,8 @@ int RunAdsStateUi(int argc, char** argv) {
              snapshot.motor_ref.received || snapshot.motor_sim.received)) {
             const float elapsed_s = static_cast<float>(
                 std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count());
-            joint_plot_buffer.Push(elapsed_s, snapshot.ref.position_deg, snapshot.sim.position_deg);
-            motor_plot_buffer.Push(elapsed_s, snapshot.motor_ref.position_deg, snapshot.motor_sim.position_deg);
+            joint_plot_buffer.Push(elapsed_s, snapshot.ref.position_rad, snapshot.sim.position_rad);
+            motor_plot_buffer.Push(elapsed_s, snapshot.motor_ref.position_rad, snapshot.motor_sim.position_rad);
             last_plotted_ref_count = snapshot.ref_count;
             last_plotted_motor_sim_count = snapshot.motor_sim_count;
             last_plotted_motor_ref_count = snapshot.motor_ref_count;
@@ -915,12 +954,35 @@ int RunAdsStateUi(int argc, char** argv) {
                                    "warning: joint name mismatch, unmatched joints are set to 0");
             }
 
-            DrawLatestJointBlock("Joint Position", snapshot.ref.position_deg, snapshot.sim.position_deg, "deg");
-            DrawLatestJointBlock("Joint Velocity", snapshot.ref.velocity_deg_s, snapshot.sim.velocity_deg_s, "deg/s");
+            ImGui::SeparatorText("Display Unit");
+            ImGui::RadioButton("rad", &ui_display_unit_mode, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("deg", &ui_display_unit_mode, 1);
+
+            DrawLatestJointBlock(
+                "Joint Position",
+                ConvertAngleArrayForDisplay(snapshot.ref.position_rad, display_in_deg),
+                ConvertAngleArrayForDisplay(snapshot.sim.position_rad, display_in_deg),
+                AngleUnitLabel(display_in_deg));
+            DrawLatestJointBlock(
+                "Joint Velocity",
+                ConvertAngularVelocityArrayForDisplay(snapshot.ref.velocity_rad_s, display_in_deg),
+                ConvertAngularVelocityArrayForDisplay(snapshot.sim.velocity_rad_s, display_in_deg),
+                AngularVelocityUnitLabel(display_in_deg));
             DrawLatestJointBlock("Joint Effort", snapshot.ref.effort, snapshot.sim.effort, "");
-            DrawLatestJointBlock("Motor Position", snapshot.motor_ref.position_deg, snapshot.motor_sim.position_deg, "deg", kMotorNames);
-            DrawLatestJointBlock("Motor Velocity", snapshot.motor_ref.velocity_deg_s, snapshot.motor_sim.velocity_deg_s, "deg/s", kMotorNames);
-            DrawLatestJointBlock("Motor Effort", snapshot.motor_ref.effort, snapshot.motor_sim.effort, "", kMotorNames);
+            DrawLatestJointBlock(
+                "Motor Position (input-side)",
+                ConvertAngleArrayForDisplay(snapshot.motor_ref.position_rad, display_in_deg),
+                ConvertAngleArrayForDisplay(snapshot.motor_sim.position_rad, display_in_deg),
+                AngleUnitLabel(display_in_deg),
+                kMotorNames);
+            DrawLatestJointBlock(
+                "Motor Velocity (input-side)",
+                ConvertAngularVelocityArrayForDisplay(snapshot.motor_ref.velocity_rad_s, display_in_deg),
+                ConvertAngularVelocityArrayForDisplay(snapshot.motor_sim.velocity_rad_s, display_in_deg),
+                AngularVelocityUnitLabel(display_in_deg),
+                kMotorNames);
+            DrawLatestJointBlock("Motor Effort (input-side)", snapshot.motor_ref.effort, snapshot.motor_sim.effort, "", kMotorNames);
             DrawTipPositionBlock(snapshot.mju_state);
             ImGui::SeparatorText("테스트 설정 상태");
             ImGui::Text("상태 토픽: %s", snapshot.test_config_state_topic.c_str());
@@ -981,7 +1043,8 @@ int RunAdsStateUi(int argc, char** argv) {
                         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.08f, 0.11f, 0.16f, 1.00f));
                         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
                         ImGui::BeginChild("joint_plot_group", ImVec2(0.0f, 0.0f), true);
-                        ImGui::SeparatorText("Joint Plots");
+                        const std::string joint_plot_title = std::string("Joint Plots [") + AngleUnitLabel(display_in_deg) + "]";
+                        ImGui::SeparatorText(joint_plot_title.c_str());
                         for (size_t i = 0; i < kJointCount; ++i) {
                             const float remaining_h = ImGui::GetContentRegionAvail().y;
                             const float plots_left = static_cast<float>(kJointCount - i);
@@ -990,10 +1053,11 @@ int RunAdsStateUi(int argc, char** argv) {
                             const float canvas_h = std::max(
                                 90.0f,
                                 (remaining_h - plots_left * label_h - (plots_left - 1.0f) * spacing_h) / plots_left);
-                            const std::string joint_label = kJointNames[i] + " Joint Ref vs Sim";
+                            const std::string joint_label =
+                                kJointNames[i] + " Joint Ref vs Sim [" + AngleUnitLabel(display_in_deg) + "]";
                             const std::string joint_canvas_id = "joint_plot_canvas_" + std::to_string(i);
                             DrawSingleJointPlot(joint_label.c_str(), joint_canvas_id.c_str(), joint_plot_buffer, i,
-                                                JointColor(i), ImVec2(-1.0f, canvas_h));
+                                                JointColor(i), display_in_deg, ImVec2(-1.0f, canvas_h));
                         }
                         ImGui::EndChild();
                         ImGui::PopStyleVar();
@@ -1003,7 +1067,9 @@ int RunAdsStateUi(int argc, char** argv) {
                         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.08f, 0.11f, 0.16f, 1.00f));
                         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
                         ImGui::BeginChild("motor_plot_group", ImVec2(0.0f, 0.0f), true);
-                        ImGui::SeparatorText("Motor Plots");
+                        const std::string motor_plot_title =
+                            std::string("Motor Plots (input-side) [") + AngleUnitLabel(display_in_deg) + "]";
+                        ImGui::SeparatorText(motor_plot_title.c_str());
                         for (size_t i = 0; i < kJointCount; ++i) {
                             const float remaining_h = ImGui::GetContentRegionAvail().y;
                             const float plots_left = static_cast<float>(kJointCount - i);
@@ -1012,10 +1078,12 @@ int RunAdsStateUi(int argc, char** argv) {
                             const float canvas_h = std::max(
                                 90.0f,
                                 (remaining_h - plots_left * label_h - (plots_left - 1.0f) * spacing_h) / plots_left);
-                            const std::string motor_label = kMotorNames[i] + " Motor Ref vs Sim";
+                            const std::string motor_label =
+                                kMotorNames[i] + " Motor Ref vs Sim (input-side) [" +
+                                AngleUnitLabel(display_in_deg) + "]";
                             const std::string motor_canvas_id = "motor_plot_canvas_" + std::to_string(i);
                             DrawSingleJointPlot(motor_label.c_str(), motor_canvas_id.c_str(), motor_plot_buffer, i,
-                                                JointColor(i), ImVec2(-1.0f, canvas_h));
+                                                JointColor(i), display_in_deg, ImVec2(-1.0f, canvas_h));
                         }
                         ImGui::EndChild();
                         ImGui::PopStyleVar();
@@ -1026,7 +1094,7 @@ int RunAdsStateUi(int argc, char** argv) {
                     ImGui::EndTabItem();
                 }
 
-                if (ImGui::BeginTabItem("Extra")) {
+                if (ImGui::BeginTabItem("Simulation")) {
                     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.08f, 0.11f, 0.16f, 1.00f));
                     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
                     ImGui::BeginChild("extra_panel_group", ImVec2(0.0f, 0.0f), true);
