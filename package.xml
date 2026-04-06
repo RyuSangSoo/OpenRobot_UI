@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ads_control_test</name>
+  <version>0.1.0</version>
+  <description>ADS-based control test package wrapped for ROS 2 colcon builds.</description>
+
+  <maintainer email="drcl-rss@todo.todo">drcl-rss</maintainer>
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>boost</depend>
+  <depend>eigen</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

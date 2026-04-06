@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+
+     
+<robot
+  name="crm_sub">
+  <!-- <link name="world"/>
+  <link name="base_footprint"/>
+  <joint name="world_fix_joint" type="fixed">
+    <origin xyz="0 0 0"/>
+    <parent link="world"/>
+    <child link="base_footprint"/>
+  </joint>
+  <joint name="base_joint" type="fixed">
+    <origin xyz="0 0 0"
+            rpy="0 0 1.570"/>
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint> -->
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.01517214 4.5E-05 4.914E-05"
+        rpy="0 0 0" />
+      <mass
+        value="28.575" />
+      <inertia
+        ixx="0.534397199"
+        ixy="-5.7473E-05"
+        ixz="-2.4601E-05"
+        iyy="0.120933078"
+        iyz="0.001522271"
+        izz="0.555504878" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/base_link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/base_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <link
+    name="LEG1_Link">
+    <inertial>
+      <origin
+        xyz="0.07025 2.5E-05 1.414E-05"
+        rpy="0 0 0" />
+      <mass
+        value="9.745" />
+      <inertia
+        ixx="0.039737"
+        ixy="3.76E-07"
+        ixz="-8.99E-07"
+        iyy="0.045892"
+        iyz="6.73E-07"
+        izz="0.047309" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG1_Link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG1_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="LEG1_Joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 1.570 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LEG1_Link" />
+    <axis
+      xyz="0.00024426 1 -1.3746E-05" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="600"
+      velocity="1000" />
+  </joint>
+  <link
+    name="LEG2_Link">
+    <inertial>
+      <origin
+        xyz="0.11216999 0.000111 -0.002907"
+        rpy="0 0 0" />
+      <mass
+        value="9.038" />
+      <inertia
+        ixx="0.030345554"
+        ixy="3.8118E-05"
+        ixz="0.000273677"
+        iyy="0.037295083"
+        iyz="0.000107007"
+        izz="0.039341571" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG2_Link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG2_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="LEG2_Joint"
+    type="revolute">
+    <origin
+      xyz="0.107 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="LEG1_Link" />
+    <child
+      link="LEG2_Link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="600"
+      velocity="1000" />
+  </joint>
+  <link
+    name="LEG3_Link">
+    <inertial>
+      <origin
+        xyz="0.36067802 0.00831394 -0.001023"
+        rpy="0 0 0" />
+      <mass
+        value="18.472" />
+      <inertia
+        ixx="0.08626664"
+        ixy="-0.02268318"
+        ixz="-0.011137018"
+        iyy="0.753893581"
+        iyz="-0.000230353"
+        izz="0.74923335" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG3_Link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG3_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="LEG3_Joint"
+    type="revolute">
+    <origin
+      xyz="0.1305 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="LEG2_Link" />
+    <child
+      link="LEG3_Link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="600"
+      velocity="1000" />
+  </joint>
+  <link
+    name="LEG4_Link">
+    <inertial>
+      <origin
+        xyz="0.18566556 0.006189 0.0438702"
+        rpy="0 0 0" />
+      <mass
+        value="6.85" />
+      <inertia
+        ixx="0.056934346"
+        ixy="0.00731145"
+        ixz="-0.025035937"
+        iyy="0.296545203"
+        iyz="0.001744285"
+        izz="0.326090609" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG4_Link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/LEG4_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="LEG4_Joint"
+    type="revolute">
+    <origin
+      xyz="0.509 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="LEG3_Link" />
+    <child
+      link="LEG4_Link" />
+    <axis
+      xyz="0 -1 1.1137E-05" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="600"
+      velocity="1000" />
+  </joint>
+  <link
+    name="EE_Link">
+    <inertial>
+      <origin
+        xyz="-0.0836316 1.1E-05 0.01728988"
+        rpy="0 0 0" />
+      <mass
+        value="1.257" />
+      <inertia
+        ixx="0.00111997"
+        ixy="7.44E-07"
+        ixz="0.000503762"
+        iyy="0.002867038"
+        iyz="2.22E-07"
+        izz="0.003343221" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/EE_Link.STL" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/drcl-rss/Music/KRISO/1127/src/hex_leg/model/meshes/EE_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="EE_Joint"
+    type="fixed">
+    <origin
+      xyz="0.82319 -0.00010203 0.016833"
+      rpy="0 0 0" />
+    <parent
+      link="LEG4_Link" />
+    <child
+      link="EE_Link" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="600"
+      velocity="1000" /> -->
+  </joint>
+
+  <gazebo reference="base_link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+  <gazebo reference="LEG1_Link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+  <gazebo reference="LEG2_Link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+  <gazebo reference="LEG3_Link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+  <gazebo reference="LEG4_Link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+  <gazebo reference="EE_Link">
+    <self_collide>false</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+
+  <ros2_control name="IgnitionSystem" type="system">
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+    <!-- Front Left leg -->
+    <joint name="LEG1_Joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="LEG2_Joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="LEG3_Joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+    <joint name="LEG4_Joint">
+      <command_interface name="position">
+        <param name="min">-100</param>
+        <param name="max">100</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+      <!-- <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type> -->
+      <parameters>/home/drcl-rss/Music/KRISO/1127/src/hex_leg/config/controller.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>

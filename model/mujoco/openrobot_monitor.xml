@@ -1,0 +1,51 @@
+<mujoco model="openrobot_monitor">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.01" gravity="0 0 0"/>
+
+  <visual>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.65 0.65 0.65" specular="0.15 0.15 0.15"/>
+    <rgba haze="0.12 0.15 0.18 1"/>
+  </visual>
+
+  <asset>
+    <texture name="sky" type="skybox" builtin="gradient" rgb1="0.08 0.10 0.13" rgb2="0.18 0.23 0.30" width="256" height="256"/>
+    <material name="base_mat" rgba="0.22 0.37 0.58 1"/>
+    <material name="link1_mat" rgba="0.89 0.41 0.31 1"/>
+    <material name="link2_mat" rgba="0.95 0.72 0.33 1"/>
+    <material name="link3_mat" rgba="0.31 0.72 0.70 1"/>
+    <material name="link4_mat" rgba="0.74 0.76 0.83 1"/>
+    <material name="tip_mat" rgba="0.30 0.86 0.45 1"/>
+    <material name="floor_mat" rgba="0.10 0.12 0.16 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="main_light" pos="0 0 2.2" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="2.0 2.0 0.1" material="floor_mat"/>
+
+    <body name="base" pos="0 0 0.12">
+      <geom name="base_geom" type="box" size="0.11 0.19 0.06" material="base_mat"/>
+
+      <body name="link1" pos="0 0 0.02">
+        <joint name="joint1" type="hinge" axis="0 1 0" range="-1.57 3.14"/>
+        <geom name="link1_geom" type="capsule" fromto="0 0 0 0.18 0 0" size="0.030" material="link1_mat"/>
+
+        <body name="link2" pos="0.18 0 0">
+          <joint name="joint2" type="hinge" axis="1 0 0" range="-3.14 3.14"/>
+          <geom name="link2_geom" type="capsule" fromto="0 0 0 0.22 0 0" size="0.026" material="link2_mat"/>
+
+          <body name="link3" pos="0.22 0 0">
+            <joint name="joint3" type="hinge" axis="0 0 -1" range="-3.14 3.14"/>
+            <geom name="link3_geom" type="capsule" fromto="0 0 0 0.28 0 0" size="0.023" material="link3_mat"/>
+
+            <body name="link4" pos="0.28 0 0">
+              <joint name="joint4" type="hinge" axis="1 0 0" range="-3.14 3.14"/>
+              <geom name="link4_geom" type="capsule" fromto="0 0 0 0.20 0 0" size="0.020" material="link4_mat"/>
+              <geom name="tip_geom" type="sphere" pos="0.20 0 0" size="0.030" material="tip_mat"/>
+              <site name="tip" pos="0.20 0 0" size="0.015" rgba="0.20 0.90 0.45 1"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

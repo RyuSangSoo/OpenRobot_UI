@@ -1,0 +1,3 @@
+build/
+test/*.csv
+test/*.ipynb

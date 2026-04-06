@@ -1,0 +1,105 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@page { size: A4; margin: 16mm 14mm; }
+body { font-family: "Noto Sans CJK KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; color:#111; line-height:1.45; font-size:11pt; }
+h1, h2, h3 { margin: 0 0 10px 0; }
+h1 { font-size: 24pt; }
+h2 { font-size: 17pt; margin-top: 22px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+h3 { font-size: 13pt; margin-top: 16px; }
+p, li { margin: 4px 0; }
+ul { margin: 8px 0 12px 18px; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 14px 0; font-size: 10pt; }
+th, td { border: 1px solid #cfcfcf; padding: 6px 8px; vertical-align: top; }
+th { background: #f3f5f7; }
+.section { page-break-inside: avoid; }
+.page-break { page-break-before: always; }
+.img-wrap { text-align:center; margin-top: 10px; }
+.img-wrap img { width: 100%; max-width: 760px; border: 1px solid #ddd; }
+.muted { color:#555; }
+.small { font-size: 9.5pt; }
+</style></head><body>
+<h1>ADS EtherCAT Experiment Summary</h1>
+<div class="section">
+<h2>Overview</h2>
+<ul>
+<li><b>Date:</b> 2026-03-25</li>
+<li><b>Platform:</b> Up Xtreme + Ubuntu 22.04</li>
+<li><b>Fieldbus:</b> TwinCAT + EtherCAT, real motor connected</li>
+<li><b>Loop target:</b> ADS/CTRL 500 Hz, ROS publish 30 Hz</li>
+<li><b>Command path:</b> GVL_Cmd.MotorCmd / GVL_Status.MotorStatus 4-axis array blob</li>
+</ul>
+<h2>Quick Comparison</h2>
+<table><thead><tr><th>Case</th><th>ADS RX [Hz]</th><th>ADS TX [Hz]</th><th>CTRL [Hz]</th><th>TX write avg [ms]</th><th>CTRL cycle avg [ms]</th></tr></thead><tbody>
+<tr><td>Multiturn position control</td><td>497.446</td><td>500.000</td><td>500.000</td><td>1.432</td><td>0.107</td></tr>
+<tr><td>Torque control</td><td>498.012</td><td>500.000</td><td>500.000</td><td>1.418</td><td>0.113</td></tr>
+</tbody></table>
+<h2>Key Takeaways</h2>
+<ul>
+<li>Both experiments keep the average control rate near 500 Hz.</li>
+<li>The RX notification path stays very light in both cases.</li>
+<li>The main margin to watch is still TX tail latency and period spikes in soft real-time conditions.</li>
+</ul></div>
+<div class="page-break"></div>
+<div class="section">
+<h2>1. Multiturn Position Control</h2>
+<p class='muted'><b>Source CSV:</b> test/multiturn_pos_etherCAT.csv<br><b>Control mode:</b> Multiturn position control</p>
+<h3>Steady-State Means</h3>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+<tr><td>ADS RX mean frequency [Hz]</td><td>497.446</td></tr>
+<tr><td>ADS TX mean frequency [Hz]</td><td>500.000</td></tr>
+<tr><td>CTRL mean frequency [Hz]</td><td>500.000</td></tr>
+<tr><td>ADS RX read average [ms]</td><td>0.00196</td></tr>
+<tr><td>ADS TX write average [ms]</td><td>1.432</td></tr>
+<tr><td>CTRL cycle average [ms]</td><td>0.107</td></tr>
+</tbody></table>
+<h3>Worst-Case Maxima</h3>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+<tr><td>ADS RX period max [ms]</td><td>19.720</td></tr>
+<tr><td>ADS TX period max [ms]</td><td>17.846</td></tr>
+<tr><td>CTRL period max [ms]</td><td>16.456</td></tr>
+<tr><td>ADS TX write max [ms]</td><td>17.843</td></tr>
+</tbody></table>
+<h3>Percentiles</h3>
+<table><thead><tr><th>Metric</th><th>P95</th><th>P99</th><th>P99.9</th></tr></thead><tbody>
+<tr><td>ads_rx_period_max_ms</td><td>9.973</td><td>13.353</td><td>17.496</td></tr>
+<tr><td>ads_tx_period_max_ms</td><td>9.387</td><td>13.513</td><td>17.739</td></tr>
+<tr><td>ads_tx_write_max_ms</td><td>9.177</td><td>13.295</td><td>17.733</td></tr>
+<tr><td>ctrl_period_max_ms</td><td>8.191</td><td>10.460</td><td>14.888</td></tr>
+<tr><td>ctrl_cycle_max_ms</td><td>1.797</td><td>4.769</td><td>8.121</td></tr>
+</tbody></table>
+<h3>Timing Summary Plot</h3>
+<div class='img-wrap'><img src='multiturn_pos_etherCAT_summary.png' alt='Multiturn position control'></div>
+</div>
+<div class="page-break"></div>
+<div class="section">
+<h2>2. Torque Control</h2>
+<p class='muted'><b>Source CSV:</b> test/torque_loop.csv<br><b>Control mode:</b> Torque control</p>
+<h3>Steady-State Means</h3>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+<tr><td>ADS RX mean frequency [Hz]</td><td>498.012</td></tr>
+<tr><td>ADS TX mean frequency [Hz]</td><td>500.000</td></tr>
+<tr><td>CTRL mean frequency [Hz]</td><td>500.000</td></tr>
+<tr><td>ADS RX read average [ms]</td><td>0.00211</td></tr>
+<tr><td>ADS TX write average [ms]</td><td>1.418</td></tr>
+<tr><td>CTRL cycle average [ms]</td><td>0.113</td></tr>
+</tbody></table>
+<h3>Worst-Case Maxima</h3>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+<tr><td>ADS RX period max [ms]</td><td>20.397</td></tr>
+<tr><td>ADS TX period max [ms]</td><td>19.022</td></tr>
+<tr><td>CTRL period max [ms]</td><td>12.096</td></tr>
+<tr><td>ADS TX write max [ms]</td><td>19.019</td></tr>
+</tbody></table>
+<h3>Percentiles</h3>
+<table><thead><tr><th>Metric</th><th>P95</th><th>P99</th><th>P99.9</th></tr></thead><tbody>
+<tr><td>ads_rx_period_max_ms</td><td>9.546</td><td>15.623</td><td>20.397</td></tr>
+<tr><td>ads_tx_period_max_ms</td><td>9.030</td><td>12.774</td><td>19.022</td></tr>
+<tr><td>ads_tx_write_max_ms</td><td>8.686</td><td>12.771</td><td>19.019</td></tr>
+<tr><td>ctrl_period_max_ms</td><td>7.462</td><td>9.889</td><td>12.096</td></tr>
+<tr><td>ctrl_cycle_max_ms</td><td>3.040</td><td>5.293</td><td>8.216</td></tr>
+</tbody></table>
+<h3>Timing Summary Plot</h3>
+<div class='img-wrap'><img src='torque_loop_summary.png' alt='Torque control'></div>
+</div>
+</body></html>
